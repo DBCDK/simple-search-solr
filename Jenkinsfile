@@ -18,10 +18,10 @@ pipeline {
 			steps {
 				script {
 					solr_container = docker.build("simple-search-solr", "--no-cache .").run("-P")
-					recommender_image = docker.image("docker.dbc.dk/simple-search")
+					recommender_image = docker.image("docker-xp.dbc.dk/simple-search")
 					recommender_image.pull()
 					// Run the container like this to be able to run it in the foreground
-					docker.script.sh(script: "docker run --rm -e LOWELL_URL=${LOWELL_URL} --net host ${recommender_image.id} solr-indexer http://${solr_container.port(8983)}/solr/simple-search", returnStdout: true).trim()
+					docker.script.sh(script: "docker run --rm -e LOWELL_URL=${LOWELL_URL} --net host ${recommender_image.id} solr-indexer pid-list http://${solr_container.port(8983)}/solr/simple-search --limit 10000", returnStdout: true).trim()
 					sh "rm -r data"
 					// take data from the temporary solr container to include in the final solr image
 					docker.script.sh(script: "docker cp ${solr_container.id}:/opt/solr/server/solr/simple-search/data data")
