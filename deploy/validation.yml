@@ -1,0 +1,5 @@
+- validation:
+  path: /solr/simple-search/select?q=pids:"125320-katalog:00563584"
+  method: get
+  response:
+    status_code: 200
