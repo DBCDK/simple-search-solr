@@ -21,7 +21,8 @@ pipeline {
 					recommender_image = docker.image("docker-xp.dbc.dk/simple-search")
 					recommender_image.pull()
 					// Run the container like this to be able to run it in the foreground
-					docker.script.sh(script: "docker run --rm -e LOWELL_URL=${LOWELL_URL} --net host ${recommender_image.id} solr-indexer pid-list http://${solr_container.port(8983)}/solr/simple-search --limit 10000", returnStdout: true).trim()
+					sh "curl -L https://artifactory.dbc.dk/artifactory/ai-generic/simple-search/773000.pids -o pid-list"
+					docker.script.sh(script: "docker run --rm -v ${WORKSPACE}/pid-list:/pid-list -e LOWELL_URL=${LOWELL_URL} --net host ${recommender_image.id} solr-indexer /pid-list http://${solr_container.port(8983)}/solr/simple-search", returnStdout: true).trim()
 					sh "rm -r data"
 					// take data from the temporary solr container to include in the final solr image
 					docker.script.sh(script: "docker cp ${solr_container.id}:/opt/solr/server/solr/simple-search/data data")
@@ -49,7 +50,7 @@ pipeline {
 			}
 			steps {
 				sh "set-new-version simple-search-solr-1-0.yml ${env.GITLAB_PRIVATE_TOKEN} ai/simple-search-solr-secrets ${env.DOCKER_TAG} -b staging"
-				build job: "ai/simple-search-solr-deploy/staging", wait: true
+				build job: "ai/simple-search/simple-search-solr-deploy/staging", wait: true
 			}
 		}
 		stage("validate staging") {
@@ -80,7 +81,7 @@ pipeline {
 			}
 			steps {
 				sh "set-new-version simple-search-solr-1-0.yml ${env.GITLAB_PRIVATE_TOKEN} ai/simple-search-solr-secrets ${env.DOCKER_TAG} -b prod"
-				build job: "ai/simple-search-solr-deploy/prod", wait: true
+				build job: "ai/simple-search/simple-search-solr-deploy/prod", wait: true
 			}
 		}
 		stage("validate prod") {
