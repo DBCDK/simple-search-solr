@@ -124,6 +124,7 @@
     <field name="all" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
     <!-- This field collects both title and title_alternative so that they have a common entry point for searching -->
     <field name="meta_title" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
+    <field name="pid_to_type_map" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
 
     <copyField source="pids" dest="all"/>    
     <copyField source="workid" dest="all"/>    
