@@ -116,9 +116,9 @@
     <field name="title" type="text_general" indexed="true" stored="true" required="false" multiValued="false" />
     <field name="title_alternative" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="aut" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
-    <field name="creator" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
+    <field name="creator" type="text_name" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="creator_sort" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
-    <field name="contributor" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
+    <field name="contributor" type="text_name" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="work_type" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="language" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="all" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
@@ -254,6 +254,19 @@
         <tokenizer class="solr.WhitespaceTokenizerFactory"/>
       </analyzer>
     </fieldType>
+
+
+    <!--
+	A text field for names which uses BeiderMorse to enable phonetic matching
+    -->
+    <fieldType name="text_name" class="solr.TextField" positionIncrementGap="100" multiValued="true">
+      <analyzer>
+	<tokenizer class="solr.StandardTokenizerFactory"/>
+	<filter class="solr.LowerCaseFilterFactory"/>
+	<filter class="solr.BeiderMorseFilterFactory" nameType="GENERIC" ruleType="APPROX" concat="true" languageSet="auto"/>
+      </analyzer>
+    </fieldType>
+
 
     <!-- A general text field that has reasonable, generic
          cross-language defaults: it tokenizes with StandardTokenizer,
