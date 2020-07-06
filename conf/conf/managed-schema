@@ -124,6 +124,8 @@
     <field name="all" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
     <!-- This field collects both title and title_alternative so that they have a common entry point for searching -->
     <field name="meta_title" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
+    <!-- This field collects both creator and title so that they have a common entry point for searching -->
+    <field name="creator_and_title" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="pid_to_type_map" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
 
     <copyField source="pids" dest="all"/>    
@@ -132,6 +134,8 @@
     <copyField source="title_alternative" dest="all"/>
     <copyField source="title" dest="meta_title"/>
     <copyField source="title_alternative" dest="meta_title"/>
+    <copyField source="creator" dest="creator_and_title"/>
+    <copyField source="title" dest="creator_and_title"/>
     <copyField source="aut" dest="all"/>
     <copyField source="creator" dest="all"/>
     <copyField source="creator_sort" dest="all"/>
