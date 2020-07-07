@@ -127,6 +127,7 @@
     <!-- This field collects both creator and title so that they have a common entry point for searching -->
     <field name="creator_and_title" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="pid_to_type_map" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
+    <field name="n_pids" type="pint" indexed="true" stored="true" required="false" multiValued="false" />
 
     <copyField source="pids" dest="all"/>    
     <copyField source="workid" dest="all"/>    
