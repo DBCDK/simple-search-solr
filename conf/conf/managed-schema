@@ -116,9 +116,11 @@
     <field name="title" type="text_general" indexed="true" stored="true" required="false" multiValued="false" />
     <field name="title_alternative" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="aut" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
-    <field name="creator" type="text_name" indexed="true" stored="true" required="false" multiValued="true" />
+    <field name="creator" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
+    <field name="creator_phonetic" type="text_name" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="creator_sort" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
-    <field name="contributor" type="text_name" indexed="true" stored="true" required="false" multiValued="true" />
+    <field name="contributor" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
+    <field name="contributor_phonetic" type="text_name" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="work_type" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="language" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="all" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
@@ -139,8 +141,10 @@
     <copyField source="title" dest="creator_and_title"/>
     <copyField source="aut" dest="all"/>
     <copyField source="creator" dest="all"/>
+    <copyField source="creator" dest="creator_phonetic"/>
     <copyField source="creator_sort" dest="all"/>
     <copyField source="contributor" dest="all"/>
+    <copyField source="contributor" dest="contributor_phonetic"/>
     <copyField source="work_type" dest="all"/>
     <copyField source="language" dest="all"/>
 
