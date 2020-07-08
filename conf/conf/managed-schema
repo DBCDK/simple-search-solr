@@ -146,7 +146,7 @@
     <copyField source="title" dest="creator_and_title"/>
     <copyField source="aut" dest="all"/>
     <copyField source="creator" dest="all"/>
-    <copyField source="title" dest="creator_exact"/>
+    <copyField source="creator" dest="creator_exact"/>
     <copyField source="creator" dest="creator_phonetic"/>
     <copyField source="creator_sort" dest="all"/>
     <copyField source="contributor" dest="all"/>
