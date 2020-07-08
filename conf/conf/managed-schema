@@ -118,7 +118,7 @@
     <field name="title_exact" type="almost_exact" indexed="true" stored="false" multiValued="false"/>
     <field name="aut" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="creator" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
-    <field name="creator_exact" type="almost_exact" indexed="true" stored="false" multiValued="false"/>
+    <field name="creator_exact" type="almost_exact" indexed="true" stored="false" multiValued="true"/>
     <field name="creator_phonetic" type="text_name" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="creator_sort" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="contributor" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
