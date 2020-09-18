@@ -21,8 +21,11 @@ pipeline {
 					recommender_image = docker.image("docker-xp.dbc.dk/simple-search")
 					recommender_image.pull()
 					// Run the container like this to be able to run it in the foreground
-					sh "curl -L https://artifactory.dbc.dk/artifactory/ai-generic/simple-search/773000.pids -o pid-list"
-					docker.script.sh(script: "docker run --rm -v ${WORKSPACE}/pid-list:/pid-list -e LOWELL_URL=${LOWELL_URL} --net host ${recommender_image.id} solr-indexer /pid-list http://${solr_container.port(8983)}/solr/simple-search", returnStdout: true).trim()
+					sh """
+						curl -L https://artifactory.dbc.dk/artifactory/ai-generic/simple-search/773000.pids -o pid-list
+						curl -L https://artifactory.dbc.dk/artifactory/ai-generic/simple-search/work_to_holdings.joblib -o work_to_holdings.joblib
+					"""
+					docker.script.sh(script: "docker run --rm -v ${WORKSPACE}/pid-list:/pid-list -v ${WORKSPACE}/work_to_holdings.joblib:/work_to_holdings.joblib -e LOWELL_URL=${LOWELL_URL} --net host ${recommender_image.id} solr-indexer /pid-list http://${solr_container.port(8983)}/solr/simple-search /work_to_holdings.joblib", returnStdout: true).trim()
 					sh "rm -r data"
 					// take data from the temporary solr container to include in the final solr image
 					docker.script.sh(script: "docker cp ${solr_container.id}:/opt/solr/server/solr/simple-search/data data")
