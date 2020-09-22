@@ -18,14 +18,20 @@ pipeline {
 			steps {
 				script {
 					solr_container = docker.build("simple-search-solr", "--no-cache .").run("-P")
-					recommender_image = docker.image("docker-xp.dbc.dk/simple-search")
-					recommender_image.pull()
-					// Run the container like this to be able to run it in the foreground
-					sh """
+					sh """#!/usr/bin/env bash
+						set -xe
+						rm -rf env pid-list work_to_holdings.joblib miniconda miniconda.sh env
 						curl -L https://artifactory.dbc.dk/artifactory/ai-generic/simple-search/bibdk.pids -o pid-list
 						curl -L https://artifactory.dbc.dk/artifactory/ai-generic/simple-search/work_to_holdings.joblib -o work_to_holdings.joblib
+						curl -k https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh
+						bash miniconda.sh -b -p miniconda
+						source miniconda/bin/activate
+						python3 -m venv env
+						source env/bin/activate
+						pip install -U pip
+						pip install simple-search
+						solr-indexer pid-list http://${solr_container.port(8983)}/solr/simple-search work_to_holdings.joblib
 					"""
-					docker.script.sh(script: "docker run --rm -v ${WORKSPACE}/pid-list:/pid-list -v ${WORKSPACE}/work_to_holdings.joblib:/work_to_holdings.joblib -e LOWELL_URL=${LOWELL_URL} --net host ${recommender_image.id} solr-indexer /pid-list http://${solr_container.port(8983)}/solr/simple-search /work_to_holdings.joblib", returnStdout: true).trim()
 					sh "rm -r data"
 					// take data from the temporary solr container to include in the final solr image
 					docker.script.sh(script: "docker cp ${solr_container.id}:/opt/solr/server/solr/simple-search/data data")
