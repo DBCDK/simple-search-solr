@@ -116,6 +116,7 @@
     <field name="title" type="text_general" indexed="true" stored="true" required="false" multiValued="false" />
     <field name="title_alternative" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="title_exact" type="almost_exact" indexed="true" stored="false" multiValued="false"/>
+    <field name="series" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="aut" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="creator" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="creator_exact" type="almost_exact" indexed="true" stored="false" multiValued="true"/>
@@ -140,6 +141,7 @@
     <copyField source="workid" dest="all"/>
     <copyField source="title" dest="all"/>
     <copyField source="title" dest="title_exact"/>
+    <copyField source="series" dest="all"/>
     <copyField source="title_alternative" dest="all"/>
     <copyField source="title" dest="meta_title"/>
     <copyField source="title_alternative" dest="meta_title"/>
