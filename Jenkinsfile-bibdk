@@ -23,6 +23,7 @@ pipeline {
 						rm -rf env pid-list work_to_holdings.joblib miniconda miniconda.sh env
 						curl -L https://artifactory.dbc.dk/artifactory/ai-generic/simple-search/bibdk.pids -o pid-list
 						curl -L https://artifactory.dbc.dk/artifactory/ai-generic/simple-search/work_to_holdings.joblib -o work_to_holdings.joblib
+						curl -L https://artifactory.dbc.dk/artifactory/ai-generic/simple-search/synonyms.txt -o synonyms.txt
 						curl -k https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh
 						bash miniconda.sh -b -p miniconda
 						source miniconda/bin/activate
@@ -30,7 +31,7 @@ pipeline {
 						source env/bin/activate
 						pip install -U pip
 						pip install simple-search
-						solr-indexer pid-list http://${solr_container.port(8983)}/solr/simple-search work_to_holdings.joblib
+						solr-indexer pid-list http://${solr_container.port(8983)}/solr/simple-search work_to_holdings.joblib synonyms.txt
 					"""
 					sh "rm -r data"
 					// take data from the temporary solr container to include in the final solr image

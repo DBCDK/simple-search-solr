@@ -134,6 +134,7 @@
     <field name="pid_to_type_map" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="n_pids" type="pfloat" indexed="true" stored="true" required="false" multiValued="false" />
     <field name="subject_dbc" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
+    <field name="subject_synonyms" type="text_general" indexed="true" stored="true" required="false" multiValued="true" />
     <field name="years_since_publication" type="pint" indexed="true" stored="true" required="false" multiValued="false" />
     <field name="holdings" type="pfloat" indexed="true" stored="true" required="false" multiValued="false" />
     <field name="popularity" type="pfloat" indexed="true" stored="true" required="false" multiValued="false" />
