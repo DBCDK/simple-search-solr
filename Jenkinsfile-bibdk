@@ -5,6 +5,7 @@ workerNode = "xp-build-i01"
 pipeline {
 	agent {label workerNode}
 	environment {
+		ARTIFACTORY_LOGIN = credentials("artifactory_login")
 		DOCKER_TAG = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
 		GITLAB_PRIVATE_TOKEN = credentials("ai-gitlab-api-token")
 		LOWELL_URL = credentials("lowell_db_connection_string")
@@ -17,7 +18,8 @@ pipeline {
 		stage("docker build model") {
 			steps {
 				script {
-					solr_container = docker.build("simple-search-solr", "--no-cache .").run("-P")
+					image = docker.build("docker-xp.dbc.dk/simple-search-solr-bibdk:${DOCKER_TAG}", "--no-cache .")
+					solr_container = image.run("-P")
 					sh """#!/usr/bin/env bash
 						set -xe
 						rm -rf env pid-list work_to_holdings.joblib miniconda miniconda.sh env
@@ -37,9 +39,19 @@ pipeline {
 					sh "rm -r data"
 					// take data from the temporary solr container to include in the final solr image
 					docker.script.sh(script: "docker cp ${solr_container.id}:/opt/solr/server/solr/simple-search/data data")
-					image = docker.build("docker-xp.dbc.dk/simple-search-solr-bibdk:${DOCKER_TAG}", "--no-cache .")
+					sh '''#!/usr/bin/env bash
+						set -xe
+						tar -cf data.tar data
+						curl -u $ARTIFACTORY_LOGIN -T data.tar https://artifactory.dbc.dk/artifactory/ai-generic/simple-search-solr/data-bibdk-$DOCKER_TAG.tar
+					'''
 					image.push()
 					if(env.BRANCH_NAME == "master") {
+						sh '''#!/usr/bin/env bash
+							set -xe
+							curl -XPOST -u $ARTIFACTORY_LOGIN https://artifactory.dbc.dk/artifactory/api/copy/ai-generic/simple-search-solr/data-bibdk-$DOCKER_TAG.tar?to=ai-generic/simple-search-solr/data-bibdk.tar.new
+							curl -XPOST -u $ARTIFACTORY_LOGIN https://artifactory.dbc.dk/artifactory/api/move/ai-generic/simple-search-solr/data-bibdk.tar?to=ai-generic/simple-search-solr/data-bibdk.tar.old
+							curl -XPOST -u $ARTIFACTORY_LOGIN https://artifactory.dbc.dk/artifactory/api/move/ai-generic/simple-search-solr/data-bibdk.tar.new?to=ai-generic/simple-search-solr/data-bibdk.tar
+						'''
 						image.push("latest")
 					}
 					// clean up indexed data to avoid it being used in the next build

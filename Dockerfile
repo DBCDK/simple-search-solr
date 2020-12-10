@@ -13,8 +13,11 @@ RUN mkdir -p server/solr/simple-search/conf  && \
 
 COPY --chown=solr conf/conf/params.json server/solr/simple-search/conf
 COPY --chown=solr data server/solr/simple-search/data
+COPY --chown=solr start.sh start.sh
 
 ENV HEAPSIZE 4g
-CMD ["/docker-entrypoint.sh"]
+CMD ["./start.sh"]
 
 EXPOSE 8983
+
+LABEL DATA_URL url for data tar package
