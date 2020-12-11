@@ -55,7 +55,7 @@ pipeline {
 						image.push("latest")
 					}
 					// clean up indexed data to avoid it being used in the next build
-					sh "rm -r data"
+					sh "rm -r data data.tar"
 					solr_container.stop()
 				}
 			}
