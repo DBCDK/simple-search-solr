@@ -7,7 +7,7 @@ pipeline {
 	environment {
 		DOCKER_TAG = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
 		GITLAB_PRIVATE_TOKEN = credentials("ai-gitlab-api-token")
-		LOWELL_URL = credentials("lowell_db_connection_string")
+		LOWELL_URL = credentials("ny-lowell-prod")
 	}
 	triggers {
 		pollSCM("H/02 * * * *")
