@@ -10,6 +10,7 @@ pipeline {
 		ARTIFACTORY_LOGIN = credentials("artifactory_login")
 		DOCKER_TAG = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
 		WORK_PRESENTATION_POSTGRES_URL = credentials("cisterne-work-presentation-postgres-url")
+        GITLAB_PRIVATE_TOKEN = credentials("metascrum-gitlab-api-token")
 	}
 	triggers {
 		pollSCM("H/02 * * * *")
@@ -19,7 +20,7 @@ pipeline {
 		stage("docker build model") {
 			steps {
 				script {
-					image = docker.build("docker-xp.dbc.dk/simple-search-solr-bibdk:${DOCKER_TAG}", "--no-cache .")
+					image = docker.build("docker-os.dbc.dk/wp-simple-search-solr-bibdk:${DOCKER_TAG}", "--no-cache .")
 					solr_container = image.run("-P")
 					sh """#!/usr/bin/env bash
 						set -xe
@@ -51,6 +52,7 @@ pipeline {
 							curl -XPOST -u $ARTIFACTORY_LOGIN https://artifactory.dbc.dk/artifactory/api/move/os-scrum-generic/wp-simple-search-solr/data-bibdk.tar?to=os-scrum-generic/wp-simple-search-solr/data-bibdk.tar.old
 							curl -XPOST -u $ARTIFACTORY_LOGIN https://artifactory.dbc.dk/artifactory/api/move/os-scrum-generic/wp-simple-search-solr/data-bibdk.tar.new?to=os-scrum-generic/wp-simple-search-solr/data-bibdk.tar
 						'''
+                        image.push("latest")
 					}
 					// clean up indexed data to avoid it being used in the next build
 					sh "rm -r data data.tar"
@@ -58,5 +60,33 @@ pipeline {
 				}
 			}
 		}
+        stage("update version number for solr") {
+            agent {
+                docker {
+                    label workerNode
+                    image "docker.dbc.dk/build-env"
+                    alwaysPull true
+                }
+            }
+            when {
+                branch "master"
+            }
+            steps {
+                sh "set-new-version services/wp-simple-search-solr/wp-simple-search-solr.yml ${env.GITLAB_PRIVATE_TOKEN} os-scrum/kubernetes-gitops-broend ${env.DOCKER_TAG} -b os-externals-staging"
+            }
+        }
 	}
+    post {
+        always {
+            echo "Finished building job ${env.JOB_NAME} #${env.BUILD_NUMBER}...."
+        }
+        failure {
+            emailext subject: "${env.JOB_NAME}: build #${env.BUILD_NUMBER} failed ", body: "Team: Search\nKomponent: WP SimpleSearch bibdk data", to: "os-team@dbc.dk"
+        }
+        cleanup {
+            echo "Cleaning workspace...."
+            cleanWs()
+        }
+    }
+
 }
