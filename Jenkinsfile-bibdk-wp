@@ -1,0 +1,64 @@
+#!groovy
+
+workerNode = "devel10"
+
+pipeline {
+	agent {
+        label workerNode
+    }
+	environment {
+		ARTIFACTORY_LOGIN = credentials("artifactory_login")
+		DOCKER_TAG = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
+		WORK_PRESENTATION_POSTGRES_URL = credentials("cisterne-work-presentation-postgres-url")
+	}
+	triggers {
+		pollSCM("H/02 * * * *")
+		cron("0 23 * * 7")
+	}
+	stages {
+		stage("docker build model") {
+			steps {
+				script {
+					image = docker.build("docker-xp.dbc.dk/simple-search-solr-bibdk:${DOCKER_TAG}", "--no-cache .")
+					solr_container = image.run("-P")
+					sh """#!/usr/bin/env bash
+						set -xe
+						rm -rf env pid-list work_to_holdings.joblib miniconda miniconda.sh env
+						curl -L https://artifactory.dbc.dk/artifactory/ai-generic/simple-search/bibdk.pids -o pid-list
+						curl -L https://artifactory.dbc.dk/artifactory/ai-generic/simple-search/work_to_holdings.joblib -o work_to_holdings.joblib
+						curl -L https://artifactory.dbc.dk/artifactory/ai-generic/simple-search/popularity-2018-2020.count.gz -o popularity-2018-2020.count.gz
+						curl -k https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh
+						bash miniconda.sh -b -p miniconda
+						source miniconda/bin/activate
+						python3 -m venv env
+						source env/bin/activate
+						pip install -U pip
+						pip install simple-search
+						wp-solr-indexer pid-list http://${solr_container.port(8983)}/solr/simple-search work_to_holdings.joblib popularity-2018-2020.count.gz
+					"""
+					sh "rm -r data"
+					// take data from the temporary solr container to include in the final solr image
+					docker.script.sh(script: "docker cp ${solr_container.id}:/opt/solr/server/solr/simple-search/data data")
+					sh '''#!/usr/bin/env bash
+						set -xe
+						tar -cf data.tar data
+						curl -u $ARTIFACTORY_LOGIN -T data.tar https://artifactory.dbc.dk/artifactory/os-scrum-generic/wp-simple-search-solr/data-bibdk-$DOCKER_TAG.tar
+					'''
+					image.push()
+					if(env.BRANCH_NAME == "master") {
+						sh '''#!/usr/bin/env bash
+							set -xe
+							curl -XPOST -u $ARTIFACTORY_LOGIN https://artifactory.dbc.dk/artifactory/api/copy/os-scrum-generic/wp-simple-search-solr/data-bibdk-$DOCKER_TAG.tar?to=os-scrum-generic/wp-simple-search-solr/data-bibdk.tar.new
+							curl -XPOST -u $ARTIFACTORY_LOGIN https://artifactory.dbc.dk/artifactory/api/move/os-scrum-generic/wp-simple-search-solr/data-bibdk.tar?to=os-scrum-generic/wp-simple-search-solr/data-bibdk.tar.old
+							curl -XPOST -u $ARTIFACTORY_LOGIN https://artifactory.dbc.dk/artifactory/api/move/os-scrum-generic/wp-simple-search-solr/data-bibdk.tar.new?to=os-scrum-generic/wp-simple-search-solr/data-bibdk.tar
+						'''
+						image.push("latest")
+					}
+					// clean up indexed data to avoid it being used in the next build
+					sh "rm -r data data.tar"
+					solr_container.stop()
+				}
+			}
+		}
+	}
+}
