@@ -44,7 +44,6 @@ pipeline {
 						tar -cf data.tar data
 						curl -u $ARTIFACTORY_LOGIN -T data.tar https://artifactory.dbc.dk/artifactory/os-scrum-generic/wp-simple-search-solr/data-bibdk-$DOCKER_TAG.tar
 					'''
-					image.push()
 					if(env.BRANCH_NAME == "master") {
 						sh '''#!/usr/bin/env bash
 							set -xe
@@ -52,7 +51,6 @@ pipeline {
 							curl -XPOST -u $ARTIFACTORY_LOGIN https://artifactory.dbc.dk/artifactory/api/move/os-scrum-generic/wp-simple-search-solr/data-bibdk.tar?to=os-scrum-generic/wp-simple-search-solr/data-bibdk.tar.old
 							curl -XPOST -u $ARTIFACTORY_LOGIN https://artifactory.dbc.dk/artifactory/api/move/os-scrum-generic/wp-simple-search-solr/data-bibdk.tar.new?to=os-scrum-generic/wp-simple-search-solr/data-bibdk.tar
 						'''
-						image.push("latest")
 					}
 					// clean up indexed data to avoid it being used in the next build
 					sh "rm -r data data.tar"
