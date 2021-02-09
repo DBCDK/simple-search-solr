@@ -34,7 +34,7 @@ pipeline {
 						source env/bin/activate
 						pip install -U pip
 						pip install simple-search
-						wp-solr-indexer pid-list http://${solr_container.port(8983)}/solr/simple-search work_to_holdings.joblib popularity-2018-2020.count.gz
+						WORK_PRESENTATION_URL=postgres://${WORK_PRESENTATION_POSTGRES_URL} wp-solr-indexer pid-list http://${solr_container.port(8983)}/solr/simple-search work_to_holdings.joblib popularity-2018-2020.count.gz
 					"""
 					sh "rm -r data"
 					// take data from the temporary solr container to include in the final solr image
