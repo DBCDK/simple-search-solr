@@ -122,5 +122,17 @@ pipeline {
 				sh "webservice_validation.py http://simple-search-solr-bibdk-1-0.mi-prod.svc.cloud.dbc.dk deploy/validation.yml"
 			}
 		}
+		stage("Clean artifactory data") {
+			agent {
+				docker {
+					label workerNode
+					image "docker.dbc.dk/build-env"
+					alwaysPull true
+				}
+			}
+			steps {
+				sh 'clean-artifactory-data ai-generic/simple-search-solr ".*-\\d+.tar" \$ARTIFACTORY_LOGIN_USR \$ARTIFACTORY_LOGIN_PSW'
+			}
+		}
 	}
 }
